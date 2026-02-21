@@ -19,11 +19,11 @@ pub use consume::Consume;
 pub trait Consumer<'a, T: 'a> {
     fn at(&self) -> At;
 
-    fn peek(&mut self) -> Option<Item<T>>;
+    fn peek(&'_ mut self) -> Option<Item<'_, T>>;
 
-    fn next(&mut self) -> Option<Item<T>>;
+    fn next(&'_ mut self) -> Option<Item<'_, T>>;
 
-    fn next_if<F>(&mut self, predicate: F) -> Option<Item<T>>
+    fn next_if<F>(&'_ mut self, predicate: F) -> Option<Item<'_, T>>
     where
         F: FnMut(&T) -> bool,
         Self: Sized;

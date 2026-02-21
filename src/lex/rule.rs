@@ -1,4 +1,4 @@
-use crate::iter::Consumer;
+use crate::iter::{Buffer, Consume, Consumer};
 use crate::lex::pattern::Pattern;
 use crate::lex::token::Token;
 use std::hash::Hash;
@@ -29,11 +29,41 @@ impl<'a, T: Eq + Hash> Rules<'a, T> {
         Self { rules }
     }
 
-    pub fn lex<Tx: Consumer<'a, T>>(&self, v: &mut Tx) -> Vec<Token<String>> {
-        todo!()
-    }
-
-    pub fn rules(&self) -> &Vec<Rule<T>> {
+    pub fn rules(&self) -> &Vec<Rule<'_, T>> {
         &self.rules
+    }
+}
+
+impl<'a, T: Eq + Hash> Rules<'a, T> {
+    pub fn lex<Tx: Consumer<'a, T>>(&self, v: &mut Tx) -> Vec<Token<Buffer<'a, T>>> {
+        let mut tokens = Vec::new();
+        
+        while !v.eof() {
+            let mut matched = false;
+            for rule in &self.rules {
+                let res = v.consume_while(|v| {
+                    if rule.pattern.consume(v) {
+                        Ok(())
+                    } else {
+                        Err(())
+                    }
+                });
+
+                if let Ok(buffer) = res {
+                    if !rule.ignore {
+                        tokens.push(Token::new(Some(rule.id), buffer));
+                    }
+
+                    matched = true;
+                    break;
+                }
+            }
+
+            if !matched {
+                panic!("No rule matched at {:?}", v.at());
+            }
+        }
+
+        tokens
     }
 }

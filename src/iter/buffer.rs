@@ -2,7 +2,7 @@ use crate::iter::item::Item;
 use crate::iter::{Consume, Consumer};
 use std::any::TypeId;
 use std::mem::transmute_copy;
-use std::ops::{Deref, Range};
+use std::ops::Deref;
 use std::slice::from_raw_parts;
 
 trait IsChar {

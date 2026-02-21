@@ -1,11 +1,11 @@
 #[derive(PartialEq, Eq, Debug)]
 pub struct Token<T> {
-    kind: Option<usize>,
-    str: T,
+    pub kind: Option<usize>,
+    pub str: T,
 }
 
-impl<'a> Token<&'a str> {
-    pub fn new(kind: Option<usize>, str: &'a str) -> Self {
+impl<T> Token<T> {
+    pub fn new(kind: Option<usize>, str: T) -> Self {
         Self { kind, str }
     }
 }

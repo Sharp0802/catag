@@ -61,7 +61,7 @@ impl<'a, T> Consumer<'a, T> for SliceConsumer<'a, T> {
         }
     }
 
-    fn consume<F>(&mut self, mut predicate: F) -> Buffer<T>
+    fn consume<F>(&mut self, mut predicate: F) -> Buffer<'a, T>
     where
         F: FnMut(&T, usize) -> bool,
         Self: Sized
@@ -82,7 +82,7 @@ impl<'a, T> Consumer<'a, T> for SliceConsumer<'a, T> {
         self.iter[begin..self.index].into()
     }
 
-    fn consume_while<E, F>(&mut self, f: F) -> Result<Buffer<T>, E>
+    fn consume_while<E, F>(&mut self, f: F) -> Result<Buffer<'a, T>, E>
     where
         F: FnOnce(&mut Self) -> Result<(), E>,
         Self: Sized

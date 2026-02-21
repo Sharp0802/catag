@@ -133,7 +133,7 @@ impl<'a, T: Clone + 'a> Consumer<'a, T> for IteratorConsumer<'a, T> {
         buffer.into()
     }
 
-    fn consume_while<E, F>(&mut self, f: F) -> Result<Buffer<T>, E>
+    fn consume_while<E, F>(&mut self, f: F) -> Result<Buffer<'a, T>, E>
     where
         F: FnOnce(&mut Self) -> Result<(), E>,
         Self: Sized

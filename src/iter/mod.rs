@@ -28,12 +28,12 @@ pub trait Consumer<'a, T: 'a> {
         F: FnMut(&T) -> bool,
         Self: Sized;
 
-    fn consume<F>(&mut self, predicate: F) -> Buffer<T>
+    fn consume<F>(&mut self, predicate: F) -> Buffer<'a, T>
     where
         F: FnMut(&T, usize) -> bool,
         Self: Sized;
     
-    fn consume_while<E, F>(&mut self, f: F) -> Result<Buffer<T>, E>
+    fn consume_while<E, F>(&mut self, f: F) -> Result<Buffer<'a, T>, E>
     where
         F: FnOnce(&mut Self) -> Result<(), E>,
         Self: Sized;

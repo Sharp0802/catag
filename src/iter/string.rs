@@ -78,7 +78,7 @@ impl<'a> Consumer<'a, char> for StringConsumer<'a> {
         self.iter[begin..self.index].into()
     }
 
-    fn consume_while<E, F>(&mut self, f: F) -> Result<Buffer<char>, E>
+    fn consume_while<E, F>(&mut self, f: F) -> Result<Buffer<'a, char>, E>
     where
         F: FnOnce(&mut Self) -> Result<(), E>,
         Self: Sized

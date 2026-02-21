@@ -145,7 +145,7 @@ macro_rules! repeat {
 
 fn parse_body_once<'a, T: Consumer<'a, char>>(
     v: &mut T,
-    stack: &mut Vec<Pattern<char>>,
+    stack: &mut Vec<Pattern<'a, char>>,
     root: bool,
 ) -> Result<bool, ErrorKind> {
     match v.next().ok_or(ErrorKind::UnexpectedEof)?.deref() {
@@ -164,13 +164,14 @@ fn parse_body_once<'a, T: Consumer<'a, char>>(
                 buffer.push(ch);
             }
 
-            Pattern::Literal(buffer.into())
+            let buffer: Buffer<'a, char> = buffer.into();
+            stack.push(Pattern::Literal(buffer));
         }
-        '[' => Pattern::Class(parse_class(v)?),
+        '[' => stack.push(Pattern::Class(parse_class(v)?)),
         '(' => {
             let mut local = Vec::new();
             while parse_body_once(v, &mut local, false)? {}
-            Pattern::Group(local)
+            stack.push(Pattern::Group(local));
         }
         '|' => {
             let old = pop!(stack);
@@ -185,12 +186,21 @@ fn parse_body_once<'a, T: Consumer<'a, char>>(
                 unreachable!("local.len() >= 1");
             };
 
-            Pattern::Or(Box::new(old), Box::new(single))
+            stack.push(Pattern::Or(Box::new(old), Box::new(single)));
         }
 
-        '?' => repeat!(stack, 0..2),
-        '*' => repeat!(stack, 0..usize::MAX),
-        '+' => repeat!(stack, 1..usize::MAX),
+        '?' => {
+            let p = repeat!(stack, 0..2);
+            stack.push(p);
+        }
+        '*' => {
+            let p = repeat!(stack, 0..usize::MAX);
+            stack.push(p);
+        }
+        '+' => {
+            let p = repeat!(stack, 1..usize::MAX);
+            stack.push(p);
+        }
 
         '\t'..'\r' | ' ' => return Ok(true),
 
@@ -215,7 +225,7 @@ fn parse_body_once<'a, T: Consumer<'a, char>>(
     Ok(true)
 }
 
-fn parse_body<'a, T: Consumer<'a, char>>(v: &mut T) -> Result<Pattern<char>, ErrorKind> {
+fn parse_body<'a, T: Consumer<'a, char>>(v: &mut T) -> Result<Pattern<'a, char>, ErrorKind> {
     let mut stack = Vec::new();
     while parse_body_once(v, &mut stack, true)? {}
     Ok(Pattern::Group(stack))

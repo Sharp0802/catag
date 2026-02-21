@@ -1,4 +1,4 @@
-use crate::iter::{IteratorConsumer, StringConsumer};
+use crate::iter::StringConsumer;
 use crate::lex::std::parse_rules;
 use crate::store::Store;
 
@@ -10,7 +10,7 @@ mod iter;
 fn main() {
     let mut text: StringConsumer = r#"
     COMMA = ',';
-    IP = ([0-9]{1,3} '.'){3,3}[0-9]{1,3};
+    IP = [0-9]+ '.' [0-9]+ '.' [0-9]+ '.' [0-9]+;
     !WS = [ \t\n\f\v\r];
     "#.into();
 
@@ -22,7 +22,7 @@ fn main() {
         println!("{:?}", rule);
     }
 
-    let mut iter: IteratorConsumer<char> = IteratorConsumer::new("hello, 192.168.0.1!".chars(), |at, _| at);
+    let mut iter: StringConsumer = "hello, 192.168.0.1!".into();
     for token in rules.lex(&mut iter) {
         println!("{:?}", token);
     }

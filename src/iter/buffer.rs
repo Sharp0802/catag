@@ -15,10 +15,6 @@ impl<T: 'static> IsChar for T {
     }
 }
 
-trait Combine {
-    fn combine(self, other: Self) -> Self;
-}
-
 #[derive(Debug, Hash)]
 enum StringRef<'a> {
     Ref(&'a str),
@@ -135,7 +131,7 @@ impl<'a, T: PartialEq + 'static> PartialEq for Buffer<'a, T> {
 }
 
 impl<'a, T> Buffer<'a, T> {
-    pub fn iter(&self) -> Iter<T> {
+    pub fn iter(&'_ self) -> Iter<'_, T> {
         match &self.inner {
             BufferImpl::Vec(vec) => Iter::Slice(vec.as_slice().iter()),
             BufferImpl::Slice(slice) => Iter::Slice(slice.iter()),

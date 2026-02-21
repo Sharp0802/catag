@@ -8,7 +8,7 @@ pub struct SliceConsumer<'a, T> {
 }
 
 impl<'a, T> SliceConsumer<'a, T> {
-    fn new(value: &'a [T], next_at: Box<dyn Fn(At, &T) -> At>) -> Self {
+    pub fn new(value: &'a [T], next_at: Box<dyn Fn(At, &T) -> At>) -> Self {
         Self {
             iter: value,
             index: 0,
@@ -23,7 +23,7 @@ impl<'a, T> Consumer<'a, T> for SliceConsumer<'a, T> {
         self.at
     }
 
-    fn peek(&mut self) -> Option<Item<T>> {
+    fn peek(&mut self) -> Option<Item<'a, T>> {
         if self.index >= self.iter.len() {
             None
         } else {
@@ -31,7 +31,7 @@ impl<'a, T> Consumer<'a, T> for SliceConsumer<'a, T> {
         }
     }
 
-    fn next(&mut self) -> Option<Item<T>> {
+    fn next(&mut self) -> Option<Item<'a, T>> {
         if self.index >= self.iter.len() {
             return None;
         }
@@ -44,7 +44,7 @@ impl<'a, T> Consumer<'a, T> for SliceConsumer<'a, T> {
         Some(Item::Ref(r))
     }
 
-    fn next_if<F>(&mut self, mut predicate: F) -> Option<Item<T>>
+    fn next_if<F>(&mut self, mut predicate: F) -> Option<Item<'a, T>>
     where
         F: FnMut(&T) -> bool,
         Self: Sized

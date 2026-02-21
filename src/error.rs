@@ -24,12 +24,6 @@ pub enum ErrorKind {
     MismatchedParen,
     #[error("unexpected semicolon")]
     UnexpectedSemicolon,
-    #[error("expected delimiter")]
-    NoDelimiter,
-    #[error("limiter not closed")]
-    LimiterNotClosed,
-    #[error("invalid limiter")]
-    InvalidLimiter,
     #[error("unexpected '{0}'")]
     UnexpectedChar(char),
     #[error("unexpected EOF")]

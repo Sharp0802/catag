@@ -30,7 +30,7 @@ impl<'a, T: Clone + 'a> Consumer<'a, T> for IteratorConsumer<'a, T> {
         self.at
     }
 
-    fn peek(&mut self) -> Option<Item<T>> {
+    fn peek(&'_ mut self) -> Option<Item<'_, T>> {
         let needs_pull = if let Some(saved_at) = self.saved_at {
             self.buffer.get(self.index - saved_at).is_none()
         } else {
@@ -55,7 +55,7 @@ impl<'a, T: Clone + 'a> Consumer<'a, T> for IteratorConsumer<'a, T> {
         .map(Item::Ref)
     }
 
-    fn next(&mut self) -> Option<Item<T>> {
+    fn next(&'_ mut self) -> Option<Item<'_, T>> {
         let buffer_idx = if let Some(saved_at) = self.saved_at {
             let idx = self.index - saved_at;
             if idx < self.buffer.len() {
@@ -99,7 +99,7 @@ impl<'a, T: Clone + 'a> Consumer<'a, T> for IteratorConsumer<'a, T> {
         }
     }
 
-    fn next_if<F>(&mut self, mut predicate: F) -> Option<Item<T>>
+    fn next_if<F>(&'_ mut self, mut predicate: F) -> Option<Item<'_, T>>
     where
         F: FnMut(&T) -> bool,
         Self: Sized,

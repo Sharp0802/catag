@@ -4,7 +4,6 @@ use std::ops::Deref;
 pub struct StringConsumer<'a> {
     iter: &'a str,
     index: usize,
-    peeked: Option<char>,
     at: At,
 }
 
@@ -13,7 +12,6 @@ impl<'a> From<&'a str> for StringConsumer<'a> {
         Self {
             iter: value,
             index: 0,
-            peeked: None,
             at: At::new(1, 0),
         }
     }
@@ -24,11 +22,11 @@ impl<'a> Consumer<'a, char> for StringConsumer<'a> {
         self.at
     }
 
-    fn peek(&mut self) -> Option<Item<char>> {
+    fn peek(&mut self) -> Option<Item<'a, char>> {
         self.iter[self.index..].chars().next().map(Item::Val)
     }
 
-    fn next(&mut self) -> Option<Item<char>> {
+    fn next(&mut self) -> Option<Item<'a, char>> {
         let Some(current) = self.iter[self.index..].chars().next() else {
             return None;
         };
@@ -43,7 +41,7 @@ impl<'a> Consumer<'a, char> for StringConsumer<'a> {
         Some(Item::Val(current))
     }
 
-    fn next_if<F>(&mut self, mut predicate: F) -> Option<Item<char>>
+    fn next_if<F>(&mut self, mut predicate: F) -> Option<Item<'a, char>>
     where
         F: FnMut(&char) -> bool,
         Self: Sized,

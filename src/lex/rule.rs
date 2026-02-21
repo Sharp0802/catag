@@ -34,11 +34,11 @@ impl<'a, T: Eq + Hash> Rules<'a, T> {
     }
 }
 
-impl<'a, T: Eq + Hash> Rules<'a, T> {
+impl<'a, T: Eq + Hash + 'static> Rules<'a, T> {
     pub fn lex<Tx: Consumer<'a, T>>(&self, v: &mut Tx) -> Vec<Token<Buffer<'a, T>>> {
         let mut tokens = Vec::new();
         
-        while !v.eof() {
+        'outer: while !v.eof() {
             let mut matched = false;
             for rule in &self.rules {
                 let res = v.consume_while(|v| {
@@ -55,7 +55,7 @@ impl<'a, T: Eq + Hash> Rules<'a, T> {
                     }
 
                     matched = true;
-                    break;
+                    continue 'outer;
                 }
             }
 

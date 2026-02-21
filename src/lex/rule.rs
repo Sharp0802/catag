@@ -37,8 +37,8 @@ impl<'a, T: Eq + Hash> Rules<'a, T> {
 impl<'a, T: Eq + Hash + 'static> Rules<'a, T> {
     pub fn lex<Tx: Consumer<'a, T>>(&self, v: &mut Tx) -> Vec<Token<Buffer<'a, T>>> {
         let mut tokens = Vec::new();
-        
-        'outer: while !v.eof() {
+
+        while !v.eof() {
             let mut matched = false;
             for rule in &self.rules {
                 let res = v.consume_while(|v| {
@@ -53,14 +53,52 @@ impl<'a, T: Eq + Hash + 'static> Rules<'a, T> {
                     if !rule.ignore {
                         tokens.push(Token::new(Some(rule.id), buffer));
                     }
-
                     matched = true;
-                    continue 'outer;
+                    break;
                 }
             }
 
-            if !matched {
-                panic!("No rule matched at {:?}", v.at());
+            if matched {
+                continue;
+            }
+
+            let res = v.consume_while(|v| {
+                if v.next().is_none() {
+                    return Ok::<(), ()>(());
+                }
+
+                loop {
+                    if v.eof() {
+                        return Ok(());
+                    }
+
+                    let mut found = false;
+                    for rule in &self.rules {
+                        // Check if rule matches, but restore state if it does (by returning Err)
+                        let matches = v.transact::<(), bool, _>(|v| {
+                            if rule.pattern.consume(v) {
+                                Err(true)
+                            } else {
+                                Ok(())
+                            }
+                        });
+
+                        if matches == Err(true) {
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if found {
+                        return Ok(());
+                    }
+
+                    v.next();
+                }
+            });
+
+            if let Ok(buffer) = res {
+                tokens.push(Token::new(None, buffer));
             }
         }
 

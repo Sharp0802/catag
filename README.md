@@ -85,3 +85,33 @@ The parser understands its structural boundaries and skips exactly what it needs
   Stmt;
 }
 ```
+
+## Example with JSON
+
+```
+@entrypoint
+enum Value =
+    | Object
+    | Array
+    | STRING
+    | NUMBER
+    | BOOL
+    | NULL
+    ;
+
+rule Separated?<T, D>(v: T[])
+    = Separated<T, D>(v)
+    |
+    ;
+
+rule Separated<T, D>(_: T[v.., l]) = (v D)* l;
+
+rule Key(name: STRING)
+    = name
+    | IDENT -> error("using indent instead of string for field name is not standard")
+    ;
+
+rule Member(key: STRING, value: Value) = Key(key) ':' value ;
+rule Array(items: Value[]) = '[' Separated?<Value, STRING, ','>(items) ']';
+rule Object(members: Member[]) = '{' (members ',')+ '}'
+```
